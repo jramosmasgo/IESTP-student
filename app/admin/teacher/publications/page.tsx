@@ -9,9 +9,9 @@ import {
   onSnapshot, 
   addDoc, 
   serverTimestamp,
-  orderBy,
   deleteDoc,
-  doc
+  doc,
+  Timestamp
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 
@@ -19,10 +19,11 @@ interface Publication {
   id: string;
   title: string;
   content: string;
+  message: string;
   degree: string;
   semester: string;
   authorName: string;
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 const DEGREES = [
@@ -71,8 +72,8 @@ export default function PublicationsPage() {
 
       // Ordenar en el cliente para evitar requerir un índice compuesto en Firestore
       list.sort((a, b) => {
-        const dateA = a.createdAt?.toDate() || 0;
-        const dateB = b.createdAt?.toDate() || 0;
+        const dateA = a.createdAt?.toDate().getTime() ?? 0;
+        const dateB = b.createdAt?.toDate().getTime() ?? 0;
         return dateB - dateA;
       });
 
@@ -178,7 +179,7 @@ export default function PublicationsPage() {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">{pub.title}</h3>
               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap mb-4">
-                {(pub as any).message}
+                {pub.message}
               </p>
               <div className="flex items-center justify-between pt-4 border-t border-gray-50 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                 <span>Por: {pub.authorName}</span>

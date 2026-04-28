@@ -33,7 +33,7 @@ interface Course {
   name: string;
   degree: string;
   semester: string;
-  professor: any; // Reference or path
+  professor: string | { path: string }; // Firestore ref or string path
   professorName?: string; // Resolved name for display
   schedule?: ScheduleItem[];
 }
@@ -53,7 +53,7 @@ const SEMESTERS = ["I", "II", "III", "IV", "V", "VI"];
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 export default function CoursesPage() {
-  const { userData, loading: authLoading } = useAuth();
+  useAuth(); // ensure auth context is initialized
   const [courses, setCourses] = useState<Course[]>([]);
   const [professors, setProfessors] = useState<Professor[]>([]);
   const [loading, setLoading] = useState(true);

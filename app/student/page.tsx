@@ -20,6 +20,17 @@ interface ScheduleEntry {
   room: string;
 }
 
+interface ScheduleItem {
+  day: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface Course {
+  id: string;
+  name: string;
+}
+
 // ─── QR Component ─────────────────────────────────────────────────────────────
 
 function QRCodeDisplay({ value }: { value: string }) {
@@ -91,7 +102,7 @@ export default function StudentDashboard() {
   const { userData, loading } = useAuth();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [coursesList, setCoursesList] = useState<any[]>([]);
+  const [coursesList, setCoursesList] = useState<Course[]>([]);
   const [loadingSchedule, setLoadingSchedule] = useState(true);
   
   useEffect(() => {
@@ -106,14 +117,14 @@ export default function StudentDashboard() {
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const entries: ScheduleEntry[] = [];
-      const courses: any[] = [];
+      const courses: Course[] = [];
 
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         courses.push({ id: doc.id, name: data.name });
 
         if (data.schedule && Array.isArray(data.schedule)) {
-          data.schedule.forEach((s: any, idx: number) => {
+          data.schedule.forEach((s: ScheduleItem, idx: number) => {
             entries.push({
               id: `${doc.id}-${idx}`,
               course: data.name,

@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 
 export function useClickAway(handler: () => void) {
-  const ref = useRef<any>(null);
+  const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const listener = (event: any) => {
-      if (!ref.current || ref.current.contains(event.target)) {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      if (!ref.current || ref.current.contains(event.target as Node)) {
         return;
       }
       handler();
@@ -18,7 +18,7 @@ export function useClickAway(handler: () => void) {
       document.removeEventListener("mousedown", listener);
       document.removeEventListener("touchstart", listener);
     };
-  }, [ref, handler]);
+  }, [handler]);
 
   return ref;
 }

@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useZxing } from "react-zxing";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 
 import { useAuth } from "@/context/AuthContext";
-
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 type ScanState = "idle" | "scanning" | "result" | "error";
@@ -41,24 +39,12 @@ export default function AdminScanPage() {
     }
   }, [userData, loading, router]);
 
-  if (loading || (userData && userData.role !== "security")) {
-    return null;
-  }
-
-  const { ref } = useZxing({
-    onDecodeResult(result) {
-      handleScanResult(result.getText());
-    },
-    paused: scanState !== "scanning" || isProcessing,
-  });
-
-  const handleScanResult = async (scannedData: string) => {
+  const handleScanResult = useCallback(async (scannedData: string) => {
     if (isProcessing) return;
     setIsProcessing(true);
     setError(null);
 
     try {
-      // 1. Buscar al estudiante por qr_data o dni
       const studentQuery = query(
         collection(db, "student"),
         where("qr_data", "==", scannedData)
@@ -66,7 +52,6 @@ export default function AdminScanPage() {
       
       let studentSnapshot = await getDocs(studentQuery);
 
-      // Si no encuentra por qr_data, intentar por dni
       if (studentSnapshot.empty) {
         const dniQuery = query(collection(db, "student"), where("dni", "==", scannedData));
         studentSnapshot = await getDocs(dniQuery);
@@ -82,11 +67,10 @@ export default function AdminScanPage() {
       const data = studentSnapshot.docs[0].data() as StudentInfo;
       setStudentInfo(data);
       
-      // 2. Registrar la asistencia con el esquema solicitado
       await addDoc(collection(db, "attendance"), {
         dateTime: serverTimestamp(),
         dniStudent: data.dni,
-        registeredBy: userData?.dni || userData?.code || "Desconocido"
+        registeredBy: userData?.dni || (userData as unknown as { code?: string })?.code || "Desconocido"
       });
 
       setScanState("result");
@@ -97,19 +81,31 @@ export default function AdminScanPage() {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, userData]);
 
-  const startScanning = () => {
+  const startScanning = useCallback(() => {
     setScanState("scanning");
     setStudentInfo(null);
     setError(null);
-  };
+  }, []);
 
-  const resetScanner = () => {
+  const resetScanner = useCallback(() => {
     setScanState("idle");
     setStudentInfo(null);
     setError(null);
-  };
+  }, []);
+
+  // useZxing MUST be called before any early return (Rules of Hooks)
+  const { ref } = useZxing({
+    onDecodeResult(result) {
+      handleScanResult(result.getText());
+    },
+    paused: scanState !== "scanning" || isProcessing,
+  });
+
+  if (loading || (userData && userData.role !== "security")) {
+    return null;
+  }
 
   return (
     <div className="p-6 max-w-2xl mx-auto">

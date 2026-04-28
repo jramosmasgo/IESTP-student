@@ -14,8 +14,15 @@ const timeSlots = [
 const days = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
 const semesters = ["I", "III", "V"];
 
-// Sample data to mimic the image
-const scheduleData: any = {
+interface ScheduleCell {
+  name: string;
+  teacher: string;
+  room: string;
+  type: string;
+  color: string;
+}
+
+const scheduleData: Record<string, ScheduleCell> = {
   "Lunes-V-1": { name: "OPORTUNIDADES Y PLANES DE NEGOCIO", teacher: "L. SERRANO", room: "AULA 10", type: "1H TEÓRICO, 2H PRÁCTICO", color: "bg-[#FFDAB9]" },
   "Lunes-V-4": { name: "PROTOCOLO Y CEREMONIAL P EVENTOS", teacher: "L. SERRANO", room: "AULA 10", type: "3 H TEORÍA", color: "bg-[#E0FFFF]" },
   "Martes-V-1": { name: "ABASTECIMIENTO", teacher: "J. FLORES", room: "AULA 22", type: "2H TEÓRICO, 2H PRÁCTICO", color: "bg-[#FF6347]" },

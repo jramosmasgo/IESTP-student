@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { db } from "@/lib/firebase";
 import { 
   collection, 
   query, 
   where, 
-  onSnapshot, 
   orderBy,
-  limit,
   getDocs,
   Timestamp
 } from "firebase/firestore";
@@ -17,11 +15,20 @@ import { useClickAway } from "@/hooks/useClickAway"; // I might need to create t
 
 interface AttendanceRecord {
   id: string;
-  dateTime: any;
+  dateTime: Timestamp;
   dniStudent: string;
   registeredBy: string;
   studentName?: string;
   studentDegree?: string;
+}
+
+interface Student {
+  id: string;
+  name: string;
+  surname: string;
+  dni: string;
+  degree?: string;
+  [key: string]: unknown;
 }
 
 export default function AttendancePage() {
@@ -33,10 +40,8 @@ export default function AttendancePage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Student Search & Modal states
-  const [allStudents, setAllStudents] = useState<any[]>([]);
-  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [modalRecords, setModalRecords] = useState<AttendanceRecord[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
@@ -44,7 +49,16 @@ export default function AttendancePage() {
   // Initial loading state for students
   const [studentsLoading, setStudentsLoading] = useState(true);
 
-  const suggestionsRef = useClickAway(() => setShowSuggestions(false));
+  // Filtered students computed (avoids setState-in-effect anti-pattern)
+  const filteredStudents = useMemo(() => {
+    if (searchTerm.trim().length === 0) return [];
+    return allStudents.filter(s =>
+      `${s.name} ${s.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.dni.includes(searchTerm)
+    );
+  }, [searchTerm, allStudents]);
+
+  const suggestionsRef = useClickAway(() => {});
 
   // Fetch all students for searching
   useEffect(() => {
@@ -52,8 +66,8 @@ export default function AttendancePage() {
       try {
         const snap = await getDocs(collection(db, "student"));
         const studentsList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setAllStudents(studentsList);
-        setFilteredStudents(studentsList); // Initially show all or none? User says "solo encontrados".
+        setAllStudents(studentsList as Student[]);
+        // filteredStudents is computed via useMemo, no setState needed here
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -64,20 +78,8 @@ export default function AttendancePage() {
     fetchStudents();
   }, []);
 
-  // Filter students based on search term
-  useEffect(() => {
-    if (searchTerm.trim().length > 0) {
-      const filtered = allStudents.filter(s => 
-        `${s.name} ${s.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.dni.includes(searchTerm)
-      );
-      setFilteredStudents(filtered);
-    } else {
-      setFilteredStudents([]); 
-    }
-  }, [searchTerm, allStudents]);
 
-  const handleStudentClick = async (student: any) => {
+  const handleStudentClick = async (student: Student) => {
     setSelectedStudent(student);
     setIsModalOpen(true);
     setIsModalLoading(true);
@@ -124,13 +126,13 @@ export default function AttendancePage() {
 
   // No client-side filtering needed for records anymore as we show students
 
-  const formatTime = (timestamp: any) => {
+  const formatTime = (timestamp: Timestamp | null | undefined) => {
     if (!timestamp) return "--:--";
     const date = timestamp.toDate();
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatDateLabel = (timestamp: any) => {
+  const formatDateLabel = (timestamp: Timestamp | null | undefined) => {
     if (!timestamp) return "";
     const date = timestamp.toDate();
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });

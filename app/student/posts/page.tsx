@@ -6,8 +6,8 @@ import {
   collection, 
   query, 
   where, 
-  onSnapshot, 
-  orderBy 
+  onSnapshot,
+  Timestamp
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 
@@ -18,7 +18,7 @@ interface Post {
   authorName: string;
   degree: string;
   semester: string;
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 export default function StudentPostsPage() {
@@ -44,8 +44,8 @@ export default function StudentPostsPage() {
 
       // Ordenar en el cliente para evitar la necesidad de un índice compuesto en Firestore
       list.sort((a, b) => {
-        const dateA = a.createdAt?.toDate() || 0;
-        const dateB = b.createdAt?.toDate() || 0;
+        const dateA = a.createdAt?.toDate().getTime() ?? 0;
+        const dateB = b.createdAt?.toDate().getTime() ?? 0;
         return dateB - dateA;
       });
 

@@ -54,7 +54,7 @@ export default function LoginPage() {
     try {
       // 2. Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      void userCredential; // used only to authenticate, data fetched from Firestore below
 
       // 3. Validar existencia en Firestore (colección 'student')
       const studentQuery = query(
@@ -79,16 +79,17 @@ export default function LoginPage() {
 
       // Éxito
       router.push("/student");
-    } catch (err: any) {
+    } catch (err) {
+      const firebaseErr = err as { code?: string; message?: string };
       console.error("Login error:", err);
       // Depuración para móvil
-      alert("Error Firebase: " + (err.code || "unknown") + "\n" + err.message);
+      alert("Error Firebase: " + (firebaseErr.code || "unknown") + "\n" + firebaseErr.message);
 
       let message = "Error al iniciar sesión. Verifica tus credenciales.";
 
-      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+      if (firebaseErr.code === "auth/user-not-found" || firebaseErr.code === "auth/wrong-password" || firebaseErr.code === "auth/invalid-credential") {
         message = "Correo o contraseña incorrectos.";
-      } else if (err.code === "auth/too-many-requests") {
+      } else if (firebaseErr.code === "auth/too-many-requests") {
         message = "Demasiados intentos. Inténtalo más tarde.";
       }
 
@@ -109,7 +110,7 @@ export default function LoginPage() {
     try {
       // 1. Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      void userCredential;
 
       // 2. Validar existencia en Firestore (colección 'staff')
       const staffQuery = query(
@@ -133,13 +134,13 @@ export default function LoginPage() {
 
       // Éxito
       router.push("/admin");
-    } catch (err: any) {
-      console.error("Admin login error:", err);
-      // Depuración para móvil
-      alert("Error Admin Firebase: " + (err.code || "unknown") + "\n" + err.message);
+    } catch (err) {
+      const firebaseErr = err as { code?: string; message?: string };
+      console.error("Admin login error:", firebaseErr);
+      alert("Error Admin Firebase: " + (firebaseErr.code || "unknown") + "\n" + firebaseErr.message);
 
       let message = "Error al iniciar sesión administrativa.";
-      if (err.code === "auth/invalid-credential") message = "Credenciales incorrectas.";
+      if (firebaseErr.code === "auth/invalid-credential") message = "Credenciales incorrectas.";
       setError(message);
       setLoading(false);
     }

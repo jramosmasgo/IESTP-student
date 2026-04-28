@@ -17,7 +17,7 @@ interface Staff {
 }
 
 export default function TeachersPage() {
-  const { userData, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const [teachers, setTeachers] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

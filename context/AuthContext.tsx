@@ -1,16 +1,47 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
 import { onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
+// ---------- types ----------
+
+export interface UserData {
+  id: string;
+  email?: string;
+  type: 'student' | 'staff';
+  // Staff & Student shared fields
+  name?: string;
+  surname?: string;
+  dni?: string;
+  // Staff-specific
+  role?: string;
+  code?: string;
+  // Student-specific
+  degree?: string;
+  Semester?: string;
+  semester?: string;
+  qr_data?: string;
+  // Escape hatch for extra Firestore fields
+  [key: string]: unknown;
+}
+
 interface AuthContextType {
   user: User | null;
-  userData: any | null;
+  userData: UserData | null;
   loading: boolean;
   logout: () => Promise<void>;
 }
+
+// ---------- context ----------
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -21,30 +52,71 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+// ---------- provider ----------
+
+/**
+ * Reads user_data from localStorage once (lazy initializer).
+ * Avoids a separate setState-inside-useEffect anti-pattern.
+ */
+function loadStoredUserData(): UserData | null {
+  try {
+    const raw = localStorage.getItem('user_data');
+    return raw ? (JSON.parse(raw) as UserData) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(loadStoredUserData);
   const [loading, setLoading] = useState(true);
 
-  // Cargar datos iniciales de localStorage si existen
-  useEffect(() => {
-    const savedData = localStorage.getItem('user_data');
-    if (savedData) {
-      try {
-        setUserData(JSON.parse(savedData));
-      } catch (e) {
-        console.error("Error parsing user data from localStorage", e);
+  // Declared BEFORE the effect so it is always in scope.
+  const fetchUserData = useCallback(async (email: string) => {
+    try {
+      const emailLower = email.toLowerCase().trim();
+
+      // 1. Buscar en 'student'
+      const studentQuery = query(
+        collection(db, 'student'),
+        where('email', '==', emailLower),
+      );
+      const studentSnapshot = await getDocs(studentQuery);
+
+      if (!studentSnapshot.empty) {
+        const doc = studentSnapshot.docs[0];
+        const fullData: UserData = { id: doc.id, ...(doc.data() as Omit<UserData, 'id'>), type: 'student' };
+        setUserData(fullData);
+        localStorage.setItem('user_data', JSON.stringify(fullData));
+        return;
       }
+
+      // 2. Buscar en 'staff'
+      const staffQuery = query(
+        collection(db, 'staff'),
+        where('email', '==', emailLower),
+      );
+      const staffSnapshot = await getDocs(staffQuery);
+
+      if (!staffSnapshot.empty) {
+        const doc = staffSnapshot.docs[0];
+        const fullData: UserData = { id: doc.id, ...(doc.data() as Omit<UserData, 'id'>), type: 'staff' };
+        setUserData(fullData);
+        localStorage.setItem('user_data', JSON.stringify(fullData));
+        return;
+      }
+    } catch (error) {
+      console.error('Error fetching user data', error);
     }
   }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      
+
       if (currentUser) {
-        // Si ya tenemos datos en el estado/localStorage, no volvemos a consultar a menos que sea necesario
-        // Pero para estar seguros de que los datos son frescos, podemos consultar Firestore
+        // Solo consulta Firestore si aún no tenemos datos locales.
         if (!userData && currentUser.email) {
           await fetchUserData(currentUser.email);
         }
@@ -52,46 +124,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserData(null);
         localStorage.removeItem('user_data');
       }
-      
+
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []); // El efecto debe depender solo del mount, internamente manejamos los cambios
-
-  const fetchUserData = async (email: string) => {
-    try {
-      const emailLower = email.toLowerCase().trim();
-      
-      // 1. Intentar buscar en 'student'
-      const studentQuery = query(collection(db, "student"), where("email", "==", emailLower));
-      const studentSnapshot = await getDocs(studentQuery);
-      
-      if (!studentSnapshot.empty) {
-        const doc = studentSnapshot.docs[0];
-        const data = doc.data();
-        const fullData = { id: doc.id, ...data, type: 'student' };
-        setUserData(fullData);
-        localStorage.setItem('user_data', JSON.stringify(fullData));
-        return;
-      }
-
-      // 2. Intentar buscar en 'staff'
-      const staffQuery = query(collection(db, "staff"), where("email", "==", emailLower));
-      const staffSnapshot = await getDocs(staffQuery);
-      
-      if (!staffSnapshot.empty) {
-        const doc = staffSnapshot.docs[0];
-        const data = doc.data();
-        const fullData = { id: doc.id, ...data, type: 'staff' };
-        setUserData(fullData);
-        localStorage.setItem('user_data', JSON.stringify(fullData));
-        return;
-      }
-    } catch (error) {
-      console.error("Error fetching user data", error);
-    }
-  };
+    // fetchUserData es estable (useCallback sin deps); userData se lee una
+    // sola vez en el mount para decidir si hacer la petición inicial.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchUserData]);
 
   const logout = async () => {
     try {
@@ -99,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserData(null);
       localStorage.removeItem('user_data');
     } catch (error) {
-      console.error("Error signing out", error);
+      console.error('Error signing out', error);
     }
   };
 
