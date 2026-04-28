@@ -45,15 +45,21 @@ export default function AdminScanPage() {
     setError(null);
 
     try {
+      // Si el QR es una URL (emergencia), extraemos solo el ID final
+      let identifier = scannedData;
+      if (scannedData.includes("/emergency/")) {
+        identifier = scannedData.split("/emergency/").pop() || scannedData;
+      }
+
       const studentQuery = query(
         collection(db, "student"),
-        where("qr_data", "==", scannedData)
+        where("qr_data", "==", identifier)
       );
       
       let studentSnapshot = await getDocs(studentQuery);
 
       if (studentSnapshot.empty) {
-        const dniQuery = query(collection(db, "student"), where("dni", "==", scannedData));
+        const dniQuery = query(collection(db, "student"), where("dni", "==", identifier));
         studentSnapshot = await getDocs(dniQuery);
       }
 
@@ -108,7 +114,7 @@ export default function AdminScanPage() {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto">
       <div className="mb-8 text-center md:text-left">
         <h1 className="text-2xl font-bold text-[#0D1A3E]">Control de Acceso</h1>
         <p className="text-sm text-[#4A5680] mt-1">

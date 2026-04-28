@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IESTP",
+  title: "Asistencia IESTP AACD",
   description:
-    "Sistema de control de asistencia estudiantil con código QR. Módulo para estudiantes y administradores.",
+    "Sistema de control de asistencia estudiantil con código QR - IESTP Andrés Avelino Cáceres Dorregaray.",
 };
 
 import { AuthProvider } from "@/context/AuthContext";

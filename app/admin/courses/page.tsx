@@ -210,7 +210,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1A3E]">Gestión de Cursos</h1>
@@ -327,7 +327,7 @@ export default function CoursesPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Carrera</label>
                   <select
@@ -383,8 +383,8 @@ export default function CoursesPage() {
                 
                 <div className="space-y-3">
                   {formData.schedule.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-                      <div className="col-span-5">
+                    <div key={index} className="flex flex-col sm:grid sm:grid-cols-12 gap-3 sm:gap-2 items-start sm:items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                      <div className="w-full sm:col-span-5">
                         <select
                           value={item.day}
                           onChange={(e) => {
@@ -397,32 +397,34 @@ export default function CoursesPage() {
                           {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                       </div>
-                      <div className="col-span-6 flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={item.startTime}
-                          onChange={(e) => {
-                            const newSched = [...formData.schedule];
-                            newSched[index].startTime = e.target.value;
-                            setFormData({...formData, schedule: newSched});
-                          }}
-                          className="w-12 bg-transparent text-xs outline-none"
-                          placeholder="08:15"
-                        />
-                        <span className="text-gray-400"> – </span>
-                        <input
-                          type="text"
-                          value={item.endTime}
-                          onChange={(e) => {
-                            const newSched = [...formData.schedule];
-                            newSched[index].endTime = e.target.value;
-                            setFormData({...formData, schedule: newSched});
-                          }}
-                          className="w-12 bg-transparent text-xs outline-none"
-                          placeholder="09:45"
-                        />
+                      <div className="w-full sm:col-span-6 flex items-center justify-between sm:justify-start gap-1">
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={item.startTime}
+                            onChange={(e) => {
+                              const newSched = [...formData.schedule];
+                              newSched[index].startTime = e.target.value;
+                              setFormData({...formData, schedule: newSched});
+                            }}
+                            className="w-12 bg-transparent text-xs outline-none"
+                            placeholder="08:15"
+                          />
+                          <span className="text-gray-400"> – </span>
+                          <input
+                            type="text"
+                            value={item.endTime}
+                            onChange={(e) => {
+                              const newSched = [...formData.schedule];
+                              newSched[index].endTime = e.target.value;
+                              setFormData({...formData, schedule: newSched});
+                            }}
+                            className="w-12 bg-transparent text-xs outline-none"
+                            placeholder="09:45"
+                          />
+                        </div>
                       </div>
-                      <div className="col-span-1 text-right">
+                      <div className="w-full sm:col-span-1 text-right mt-1 sm:mt-0">
                         <button
                           type="button"
                           onClick={() => setFormData({

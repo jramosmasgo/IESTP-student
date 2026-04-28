@@ -91,7 +91,7 @@ export default function TeachersPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1A3E]">Personal Docente</h1>
@@ -117,9 +117,9 @@ export default function TeachersPage() {
             <thead>
               <tr className="bg-[#F8FAFC] border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Docente</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">DNI</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Contacto</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Dirección</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">DNI</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Contacto</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden lg:table-cell">Dirección</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
@@ -135,22 +135,22 @@ export default function TeachersPage() {
                   <tr key={teacher.id} className="hover:bg-gray-50/50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#F0F2F8] text-[#1B2B6B] flex items-center justify-center font-bold text-xs">
+                        <div className="w-9 h-9 rounded-full bg-[#F0F2F8] text-[#1B2B6B] flex items-center justify-center font-bold text-xs shrink-0">
                           {teacher.name[0]}{teacher.surname[0]}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{teacher.name} {teacher.surname}</p>
-                          <p className="text-xs text-gray-500">{teacher.email}</p>
+                          <p className="text-sm font-bold text-gray-900 leading-tight">{teacher.name} {teacher.surname}</p>
+                          <p className="text-xs text-gray-500 truncate max-w-[120px] sm:max-w-none">{teacher.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 font-mono">
+                    <td className="px-6 py-4 text-sm text-gray-600 font-mono hidden sm:table-cell">
                       {teacher.dni}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 hidden md:table-cell">
                       <p className="text-sm text-gray-700">{teacher.phone}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 hidden lg:table-cell">
                       <p className="text-sm text-gray-500 truncate max-w-[200px]">{teacher.address}</p>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -185,7 +185,7 @@ export default function TeachersPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nombre</label>
                   <input
@@ -235,7 +235,7 @@ export default function TeachersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Teléfono</label>
                   <input

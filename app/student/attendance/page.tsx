@@ -16,14 +16,14 @@ export default function StudentAttendancePage() {
   const pct = summary.percentage;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="mb-7">
         <h1 className="text-xl font-bold text-gray-900">Mi Asistencia</h1>
         <p className="text-sm text-gray-500 mt-0.5">Registro diario — Semestre 2026-I</p>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
           { label: "Total días", value: summary.total, bg: "bg-gray-50", text: "text-gray-900", border: "border-gray-200" },
           { label: "Presentes", value: summary.present, bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
@@ -95,7 +95,7 @@ export default function StudentAttendancePage() {
 
               {/* Details */}
               <div className="flex-1 flex items-center justify-between gap-3 min-w-0">
-                <div className="min-w-0">
+                <div className="p-5 sm:p-6 md:p-8">
                   <StatusBadge status={r.status} />
                   {r.note && (
                     <p className="text-[11px] text-gray-400 mt-0.5 truncate">{r.note}</p>

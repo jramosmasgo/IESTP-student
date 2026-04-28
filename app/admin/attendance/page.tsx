@@ -147,7 +147,7 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1A3E]">Registros de Entrada</h1>
@@ -192,8 +192,8 @@ export default function AttendancePage() {
             <thead>
               <tr className="bg-[#F8FAFC] border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Estudiante</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">DNI</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Carrera / Programa</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">DNI</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Carrera / Programa</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
@@ -213,16 +213,19 @@ export default function AttendancePage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#F0F2F8] text-[#1B2B6B] flex items-center justify-center font-bold text-xs">
+                        <div className="w-8 h-8 rounded-full bg-[#F0F2F8] text-[#1B2B6B] flex items-center justify-center font-bold text-xs shrink-0">
                           {student.name[0]}{student.surname?.[0]}
                         </div>
-                        <p className="text-sm font-bold text-gray-900">{student.name} {student.surname}</p>
+                        <div>
+                          <p className="text-sm font-bold text-gray-900 leading-tight">{student.name} {student.surname}</p>
+                          <p className="text-[10px] text-gray-500 sm:hidden">{student.dni}</p>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 hidden sm:table-cell">
                       <p className="text-xs text-gray-500 font-mono">{student.dni}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 hidden md:table-cell">
                       <span className="text-[10px] font-bold text-[#1B2B6B] bg-[#F0F2F8] px-2 py-0.5 rounded-md uppercase">
                         {student.degree || "N/A"}
                       </span>
@@ -286,15 +289,15 @@ export default function AttendancePage() {
               ) : modalRecords.length > 0 ? (
                 <div className="space-y-3">
                   {modalRecords.map((record) => (
-                    <div key={record.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                    <div key={record.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 gap-3">
                       <div className="flex items-center gap-4">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
                         <div>
                           <p className="text-sm font-bold text-gray-900">{formatDateLabel(record.dateTime)}</p>
                           <p className="text-xs text-gray-400">Registrado por: {record.registeredBy}</p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right pl-6 sm:pl-0">
                         <p className="text-sm font-bold text-[#1B2B6B]">{formatTime(record.dateTime)}</p>
                         <p className="text-[10px] text-gray-400 font-bold uppercase">Entrada</p>
                       </div>

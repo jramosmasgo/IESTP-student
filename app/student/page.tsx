@@ -34,10 +34,13 @@ interface Course {
 // ─── QR Component ─────────────────────────────────────────────────────────────
 
 function QRCodeDisplay({ value }: { value: string }) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const qrValue = `${origin}/emergency/${value || "no-data"}`;
+
   return (
     <div className="bg-white p-3 rounded-xl inline-block shadow-sm">
       <QRCodeSVG 
-        value={value || "no-data"} 
+        value={qrValue} 
         size={140}
         level="H"
         includeMargin={false}
@@ -163,7 +166,7 @@ export default function StudentDashboard() {
   const summary = STUDENT_SUMMARY;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
       {/* QR Modal Overlay */}
       {isQRModalOpen && (
         <div 
@@ -188,7 +191,7 @@ export default function StudentDashboard() {
             
             <div className="bg-[#F8FAFC] p-6 rounded-2xl border border-gray-100 shadow-inner">
               <QRCodeSVG 
-                value={userData?.qr_data || userData?.dni || ""} 
+                value={typeof window !== "undefined" ? `${window.location.origin}/emergency/${userData?.qr_data || userData?.dni || ""}` : ""} 
                 size={280}
                 level="H"
                 className="w-full h-auto max-w-[280px]"
@@ -274,7 +277,7 @@ export default function StudentDashboard() {
         {/* Right column */}
         <div className="lg:col-span-2 space-y-5">
           {/* Summary stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
             <StatCard
               label="Asistencias"
               value={summary.present}

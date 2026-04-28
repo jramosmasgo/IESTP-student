@@ -37,7 +37,7 @@ const scheduleData: Record<string, ScheduleCell> = {
 
 export default function SchedulePage() {
   return (
-    <div className="p-4 md:p-8 max-w-[1400px] mx-auto overflow-x-auto">
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1400px] mx-auto overflow-x-auto">
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1A3E]">Horario Académico</h1>

@@ -65,7 +65,7 @@ export default function StudentPostsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#0D1A3E]">Muro de Avisos</h1>
         <p className="text-sm text-[#4A5680] mt-1">
@@ -87,7 +87,7 @@ export default function StudentPostsPage() {
         ) : (
           posts.map((post) => (
             <div key={post.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              <div className="p-6 md:p-8">
+              <div className="p-5 sm:p-6 md:p-8">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-[#1B2B6B] text-white flex items-center justify-center font-bold text-sm">
                     {post.authorName?.[0] || "D"}

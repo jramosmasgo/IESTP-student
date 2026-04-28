@@ -8,6 +8,7 @@ import {
   where, 
   onSnapshot, 
   addDoc, 
+  updateDoc,
   serverTimestamp,
   deleteDoc,
   doc,
@@ -45,6 +46,7 @@ export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
@@ -89,29 +91,54 @@ export default function PublicationsPage() {
     setIsSubmitting(true);
 
     try {
-      await addDoc(collection(db, "post"), {
+      const payload = {
         title: formData.title,
         message: formData.content,
         degree: formData.degree,
         semester: formData.semester,
-        createdBy: `/staff/${userData?.id || userData?.dni}`,
-        authorName: `${userData?.name} ${userData?.surname}`,
-        createdAt: serverTimestamp(),
-      });
+        updatedAt: serverTimestamp(),
+      };
+
+      if (editId) {
+        await updateDoc(doc(db, "post", editId), payload);
+      } else {
+        await addDoc(collection(db, "post"), {
+          ...payload,
+          createdBy: `/staff/${userData?.id || userData?.dni}`,
+          authorName: `${userData?.name} ${userData?.surname}`,
+          createdAt: serverTimestamp(),
+        });
+      }
       
-      setIsModalOpen(false);
-      setFormData({
-        title: "",
-        content: "",
-        degree: "ASISTENCIA ADMINISTRATIVA",
-        semester: "I",
-      });
+      closeModal();
     } catch (error) {
-      console.error("Error creating publication:", error);
-      alert("Error al publicar el mensaje.");
+      console.error("Error saving publication:", error);
+      alert("Error al guardar el mensaje.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditModal = (pub: Publication) => {
+    setFormData({
+      title: pub.title,
+      content: pub.message,
+      degree: pub.degree,
+      semester: pub.semester,
+    });
+    setEditId(pub.id);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditId(null);
+    setFormData({
+      title: "",
+      content: "",
+      degree: "ASISTENCIA ADMINISTRATIVA",
+      semester: "I",
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -132,7 +159,7 @@ export default function PublicationsPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1A3E]">Publicaciones y Mensajes</h1>
@@ -141,7 +168,10 @@ export default function PublicationsPage() {
           </p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            closeModal();
+            setIsModalOpen(true);
+          }}
           className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1B2B6B] hover:bg-[#14205A] text-white rounded-xl font-semibold transition shadow-lg shadow-blue-900/10"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,14 +198,24 @@ export default function PublicationsPage() {
                     Semestre {pub.semester}
                   </span>
                 </div>
-                <button 
-                  onClick={() => handleDelete(pub.id)}
-                  className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                 <div className="flex gap-1 sm:gap-2">
+                  <button 
+                    onClick={() => openEditModal(pub)}
+                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(pub.id)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">{pub.title}</h3>
               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap mb-4">
@@ -195,8 +235,10 @@ export default function PublicationsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl p-8 max-w-xl w-full shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#0D1A3E]">Nueva Publicación</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-2">
+              <h3 className="text-xl font-bold text-[#0D1A3E]">
+                {editId ? "Editar Publicación" : "Nueva Publicación"}
+              </h3>
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 p-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -204,7 +246,7 @@ export default function PublicationsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Dirigido a Carrera</label>
                   <select
@@ -257,7 +299,7 @@ export default function PublicationsPage() {
                   disabled={isSubmitting}
                   className="w-full py-4 bg-[#1B2B6B] text-white rounded-2xl font-bold hover:bg-[#14205A] transition shadow-lg disabled:opacity-50"
                 >
-                  {isSubmitting ? "Publicando..." : "Publicar Mensaje"}
+                  {isSubmitting ? "Guardando..." : (editId ? "Actualizar Publicación" : "Publicar Mensaje")}
                 </button>
               </div>
             </form>

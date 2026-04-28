@@ -140,7 +140,7 @@ export default function AdminsPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#0D1A3E]">Staff Administrativo</h1>
@@ -165,9 +165,9 @@ export default function AdminsPage() {
             <thead>
               <tr className="bg-[#F8FAFC] border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Nombre</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">DNI</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">DNI</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Rol</th>
-                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Contacto</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Contacto</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
@@ -183,16 +183,16 @@ export default function AdminsPage() {
                   <tr key={admin.id} className="hover:bg-gray-50/50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#FFF0F0] text-[#CC1116] flex items-center justify-center font-bold text-xs">
+                        <div className="w-9 h-9 rounded-full bg-[#FFF0F0] text-[#CC1116] flex items-center justify-center font-bold text-xs shrink-0">
                           {admin.name[0]}{admin.surname[0]}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{admin.name} {admin.surname}</p>
-                          <p className="text-xs text-gray-400">{admin.email}</p>
+                          <p className="text-sm font-bold text-gray-900 leading-tight">{admin.name} {admin.surname}</p>
+                          <p className="text-xs text-gray-400 sm:hidden">{admin.dni}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 font-mono">
+                    <td className="px-6 py-4 text-sm text-gray-600 font-mono hidden sm:table-cell">
                       {admin.dni}
                     </td>
                     <td className="px-6 py-4">
@@ -204,7 +204,7 @@ export default function AdminsPage() {
                         {admin.role === 'administrador' ? 'Administrador' : 'Super Admin'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">
                       {admin.phone}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -245,7 +245,7 @@ export default function AdminsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre</label>
                   <input
@@ -268,7 +268,7 @@ export default function AdminsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">DNI</label>
                   <input
@@ -304,7 +304,7 @@ export default function AdminsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Teléfono</label>
                   <input

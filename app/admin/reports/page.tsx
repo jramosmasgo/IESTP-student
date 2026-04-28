@@ -75,14 +75,14 @@ function BarChart() {
 
 export default function AdminReportsPage() {
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="mb-7">
         <h1 className="text-xl font-bold text-gray-900">Reportes</h1>
         <p className="text-sm text-gray-500 mt-0.5">Semestre 2026-I — Semana del 21 al 25 de abril</p>
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Total registros", value: total, color: "#1B2B6B", icon: "📋" },
           { label: "Asistencias", value: present, color: "#10b981", icon: "✅" },
