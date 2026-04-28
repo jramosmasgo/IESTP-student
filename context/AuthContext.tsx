@@ -47,6 +47,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   userData: null,
+  setUserData: () => {},
   loading: true,
   logout: async () => {},
 });
