@@ -37,6 +37,7 @@ export interface UserData {
 interface AuthContextType {
   user: User | null;
   userData: UserData | null;
+  setUserData: (data: UserData | null) => void;
   loading: boolean;
   logout: () => Promise<void>;
 }
@@ -145,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, loading, logout }}>
+    <AuthContext.Provider value={{ user, userData, setUserData, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

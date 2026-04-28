@@ -27,7 +27,7 @@ interface Staff {
 }
 
 export default function AdminsPage() {
-  const { userData, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const [admins, setAdmins] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

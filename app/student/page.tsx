@@ -7,7 +7,6 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import {
   STUDENT_SUMMARY,
 } from "@/lib/mockData";
-import StatusBadge from "@/components/StatusBadge";
 import { useAuth } from "@/context/AuthContext";
 
 import { QRCodeSVG } from "qrcode.react";
@@ -86,26 +85,12 @@ function StatCard({
   );
 }
 
-// ─── Progress bar ─────────────────────────────────────────────────────────────
-
-function ProgressBar({ value, color }: { value: number; color: string }) {
-  return (
-    <div className="w-full bg-gray-100 rounded-full h-2">
-      <div
-        className="h-2 rounded-full transition-all"
-        style={{ width: `${value}%`, background: color }}
-      />
-    </div>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
   const { userData, loading } = useAuth();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [coursesList, setCoursesList] = useState<Course[]>([]);
   const [loadingSchedule, setLoadingSchedule] = useState(true);
   
   useEffect(() => {
@@ -144,14 +129,22 @@ export default function StudentDashboard() {
       entries.sort((a, b) => daysOrder.indexOf(a.day) - daysOrder.indexOf(b.day));
 
       setSchedule(entries.slice(0, 10)); // Top 10 próximos
-      setCoursesList(courses);
       setLoadingSchedule(false);
     });
 
     return () => unsubscribe();
   }, [userData, loading]);
 
-  if (loading) return null;
+  if (loading || !userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0F2F8]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#1B2B6B] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[#1B2B6B] font-medium">Cargando perfil...</p>
+        </div>
+      </div>
+    );
+  }
 
   const student = {
     name: userData?.name ? `${userData.name} ${userData.surname || ""}`.trim() : "Estudiante",

@@ -40,7 +40,6 @@ function BarChart() {
   return (
     <div className="flex items-end gap-2 h-36">
       {DAYS_DATA.map((d) => {
-        const total = d.present + d.late + d.absent;
         const pPct = (d.present / maxVal) * 100;
         const tPct = (d.late / maxVal) * 100;
         const aPct = (d.absent / maxVal) * 100;

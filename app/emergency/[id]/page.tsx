@@ -143,7 +143,7 @@ export default function EmergencyPage() {
 
             <div className="bg-[#FFF0F0] p-4 rounded-2xl border border-red-50">
               <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1">Institución</p>
-              <p className="text-sm font-bold text-red-700">IESTP "Andrés Avelino Cáceres Dorregaray"</p>
+              <p className="text-sm font-bold text-red-700">IESTP &quot;Andrés Avelino Cáceres Dorregaray&quot;</p>
               <p className="text-xs text-red-600 mt-0.5 underline">Llamar a la institución: (064) 244191</p>
             </div>
           </div>

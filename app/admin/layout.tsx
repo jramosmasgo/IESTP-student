@@ -88,12 +88,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
+  if (loading || !userData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F0F2F8]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-[#1B2B6B] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-[#1B2B6B] font-medium">Cargando...</p>
+          <p className="text-[#1B2B6B] font-medium">Validando datos...</p>
         </div>
       </div>
     );

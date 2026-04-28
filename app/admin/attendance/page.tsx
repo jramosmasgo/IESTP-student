@@ -10,8 +10,7 @@ import {
   getDocs,
   Timestamp
 } from "firebase/firestore";
-import { useAuth } from "@/context/AuthContext";
-import { useClickAway } from "@/hooks/useClickAway"; // I might need to create this or use a simple ref
+
 
 interface AttendanceRecord {
   id: string;
@@ -32,8 +31,6 @@ interface Student {
 }
 
 export default function AttendancePage() {
-  const { userData, loading: authLoading } = useAuth();
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Filter states
@@ -47,7 +44,6 @@ export default function AttendancePage() {
   const [isModalLoading, setIsModalLoading] = useState(false);
 
   // Initial loading state for students
-  const [studentsLoading, setStudentsLoading] = useState(true);
 
   // Filtered students computed (avoids setState-in-effect anti-pattern)
   const filteredStudents = useMemo(() => {
@@ -58,7 +54,6 @@ export default function AttendancePage() {
     );
   }, [searchTerm, allStudents]);
 
-  const suggestionsRef = useClickAway(() => {});
 
   // Fetch all students for searching
   useEffect(() => {
@@ -71,7 +66,6 @@ export default function AttendancePage() {
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
-        setStudentsLoading(false);
         setLoading(false);
       }
     };

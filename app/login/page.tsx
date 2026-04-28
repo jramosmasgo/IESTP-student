@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { userData, loading: authLoading } = useAuth();
+  const { userData, setUserData, loading: authLoading } = useAuth();
 
   // Redirigir si ya está logueado
   useEffect(() => {
@@ -44,9 +44,18 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    // 1. Validar dominio
+    // 1. Validar dominio y formato
     if (!email.endsWith("@institutocajas.edu.pe")) {
       setError("Solo se permiten correos institucionales (@institutocajas.edu.pe)");
+      setLoading(false);
+      return;
+    }
+
+    const prefix = email.split("@")[0];
+    const isStudentFormat = /^\d{8}$/.test(prefix);
+
+    if (!isStudentFormat) {
+      setError("Para ingresar como alumno, debes usar tu DNI (8 números) en el correo institucional.");
       setLoading(false);
       return;
     }
@@ -74,8 +83,9 @@ export default function LoginPage() {
 
       // Guardar datos en localStorage para acceso inmediato
       const doc = querySnapshot.docs[0];
-      const studentData = { id: doc.id, ...doc.data() };
+      const studentData = { id: doc.id, ...doc.data(), type: 'student' as const };
       localStorage.setItem('user_data', JSON.stringify(studentData));
+      setUserData(studentData);
 
       // Éxito
       router.push("/student");
@@ -108,6 +118,21 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // 1. Validar dominio y formato
+      if (!email.endsWith("@institutocajas.edu.pe")) {
+        setError("Solo se permiten correos institucionales (@institutocajas.edu.pe)");
+        setLoading(false);
+        return;
+      }
+
+      const prefix = email.split("@")[0];
+      const isStudentFormat = /^\d{8}$/.test(prefix);
+
+      if (isStudentFormat) {
+        setError("Los alumnos deben usar el botón principal de 'Iniciar sesión'.");
+        setLoading(false);
+        return;
+      }
       // 1. Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       void userCredential;
@@ -129,8 +154,9 @@ export default function LoginPage() {
 
       // Guardar datos en localStorage
       const doc = querySnapshot.docs[0];
-      const staffData = { id: doc.id, ...doc.data() };
+      const staffData = { id: doc.id, ...doc.data(), type: 'staff' as const };
       localStorage.setItem('user_data', JSON.stringify(staffData));
+      setUserData(staffData);
 
       // Éxito
       router.push("/admin");
