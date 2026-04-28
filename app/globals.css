@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ─── IESTP Brand Palette ─────────────────────────────────────────────────────
+   Extracted from /public/logo/iesdtp-logo.png
+   Primary  : Navy blue  #1B2B6B  (IESTP text, inner gear)
+   Secondary: Red        #CC1116  (outer gear, borders)
+   Accent   : Yellow     #F5C518  (engineer helmet)
+   ──────────────────────────────────────────────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand */
+  --color-brand-navy:   #1B2B6B;
+  --color-brand-navy2:  #14205A;
+  --color-brand-navy-light: #2D4499;
+  --color-brand-red:    #CC1116;
+  --color-brand-red-dark: #A80D11;
+  --color-brand-yellow: #F5C518;
+
+  /* Semantic */
+  --color-primary:      #1B2B6B;
+  --color-primary-dark: #14205A;
+  --color-primary-light:#2D4499;
+  --color-secondary:    #CC1116;
+  --color-accent:       #F5C518;
+  --color-success:      #16a34a;
+  --color-warning:      #d97706;
+  --color-danger:       #CC1116;
+
+  /* Surfaces */
+  --color-bg:           #F0F2F8;
+  --color-bg-card:      #ffffff;
+  --color-border:       #D6DBF0;
+
+  /* Text */
+  --color-text-primary:   #0D1A3E;
+  --color-text-secondary: #4A5680;
+  --color-text-muted:     #8A95B8;
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #F0F2F8;
+  --foreground: #0D1A3E;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #E4E8F4; }
+::-webkit-scrollbar-thumb { background: #B0BCDC; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #8A95B8; }
