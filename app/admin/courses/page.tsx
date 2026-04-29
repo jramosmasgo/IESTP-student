@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { db } from "@/lib/firebase";
 import { 
   collection, 
@@ -15,6 +15,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import { showSuccess, showError, showConfirm } from "@/lib/swal";
 
 interface Professor {
   id: string;
@@ -69,6 +70,20 @@ export default function CoursesPage() {
     professorId: "",
     schedule: [] as ScheduleItem[],
   });
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [degreeFilter, setDegreeFilter] = useState("TODOS");
+  const [semesterFilter, setSemesterFilter] = useState("TODOS");
+
+  const filteredCourses = useMemo(() => {
+    return courses.filter(course => {
+      const matchesName = course.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDegree = degreeFilter === "TODOS" || course.degree === degreeFilter;
+      const matchesSemester = semesterFilter === "TODOS" || course.semester === semesterFilter;
+      return matchesName && matchesDegree && matchesSemester;
+    });
+  }, [courses, searchTerm, degreeFilter, semesterFilter]);
 
   // Load Professors
   useEffect(() => {
@@ -129,12 +144,15 @@ export default function CoursesPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este curso?")) return;
+    const result = await showConfirm("¿Eliminar curso?", "Se borrarán todos los datos vinculados a este curso.");
+    if (!result.isConfirmed) return;
+
     try {
       await deleteDoc(doc(db, "course", id));
+      showSuccess("Eliminado", "El curso ha sido eliminado.");
     } catch (error) {
       console.error("Error deleting course:", error);
-      alert("Error al eliminar el curso.");
+      showError("Error", "No se pudo eliminar el curso.");
     }
   };
 
@@ -170,7 +188,7 @@ export default function CoursesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.professorId) return alert("Selecciona un profesor");
+    if (!formData.professorId) return showError("Faltan datos", "Debes seleccionar un profesor para el curso.");
     setIsSubmitting(true);
 
     try {
@@ -192,10 +210,11 @@ export default function CoursesPage() {
         });
       }
       
+      showSuccess(editId ? "Actualizado" : "Creado", editId ? "El curso ha sido actualizado correctamente." : "El curso ha sido registrado exitosamente.");
       closeModal();
     } catch (error) {
       console.error("Error saving course:", error);
-      alert("Error al guardar el curso.");
+      showError("Error al guardar", "Hubo un problema al guardar los datos del curso.");
     } finally {
       setIsSubmitting(false);
     }
@@ -229,74 +248,158 @@ export default function CoursesPage() {
         </button>
       </div>
 
-      {/* Grid of Courses */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.length === 0 ? (
-          <div className="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-gray-200">
-            <p className="text-gray-500">No hay cursos registrados todavía.</p>
+      {/* Filters Bar */}
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+        <div className="flex-1 min-w-[250px]">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Buscar por nombre</label>
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Ej. Programación..."
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#1B2B6B] transition outline-none"
+            />
+            <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
-        ) : (
-          courses.map((course) => (
-            <div key={course.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-[#F0F2F8] text-[#1B2B6B] text-[10px] font-bold uppercase rounded-full tracking-wider">
-                  Semestre {course.semester}
-                </span>
-                <span className="text-xs font-medium text-gray-400 capitalize">
-                  {course.degree}
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-[#0D1A3E] mb-2">{course.name}</h3>
-              
-              {/* Schedule Section */}
-              <div className="space-y-1 mb-4">
-                {course.schedule && course.schedule.length > 0 ? (
-                  course.schedule.map((s, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-[11px] text-gray-500">
-                      <span className="font-bold text-[#1B2B6B]">{s.day}:</span>
-                      <span>{s.startTime} – {s.endTime}</span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-[11px] text-gray-400 italic">Sin horario asignado</p>
-                )}
-              </div>
+        </div>
 
-              <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-gray-50">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-[#FFF0F0] text-[#CC1116] flex items-center justify-center font-bold text-[10px]">
-                    {course.professorName?.[0]}
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-tight">Docente</p>
-                    <p className="text-xs font-semibold text-gray-700">{course.professorName}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={() => openEditModal(course)}
-                    className="p-1.5 text-gray-400 hover:text-[#1B2B6B] hover:bg-gray-100 rounded-lg transition"
-                    title="Editar"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(course.id)}
-                    className="p-1.5 text-gray-400 hover:text-[#CC1116] hover:bg-red-50 rounded-lg transition"
-                    title="Eliminar"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+        <div className="w-full sm:w-auto min-w-[180px]">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Carrera</label>
+          <select
+            value={degreeFilter}
+            onChange={(e) => setDegreeFilter(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white outline-none"
+          >
+            <option value="TODOS">Todas las carreras</option>
+            {DEGREES.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+
+        <div className="w-full sm:w-auto min-w-[140px]">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Semestre</label>
+          <select
+            value={semesterFilter}
+            onChange={(e) => setSemesterFilter(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white outline-none"
+          >
+            <option value="TODOS">Todos</option>
+            {SEMESTERS.map(s => <option key={s} value={s}>Semestre {s}</option>)}
+          </select>
+        </div>
+
+        {(searchTerm || degreeFilter !== "TODOS" || semesterFilter !== "TODOS") && (
+          <button 
+            onClick={() => {
+              setSearchTerm("");
+              setDegreeFilter("TODOS");
+              setSemesterFilter("TODOS");
+            }}
+            className="px-4 py-2.5 text-xs font-bold text-[#CC1116] hover:bg-red-50 rounded-xl transition mb-0.5"
+          >
+            Limpiar
+          </button>
         )}
+      </div>
+
+      {/* Table of Courses */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#F8FAFC] border-b border-gray-100">
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Curso</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">Carrera / Semestre</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Docente</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden lg:table-cell">Horario</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filteredCourses.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    {searchTerm || degreeFilter !== "TODOS" || semesterFilter !== "TODOS" 
+                      ? "No se encontraron cursos con los filtros aplicados." 
+                      : "No hay cursos registrados todavía."}
+                  </td>
+                </tr>
+              ) : (
+                filteredCourses.map((course) => (
+                  <tr key={course.id} className="hover:bg-gray-50/50 transition group">
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-bold text-gray-900 leading-tight">{course.name}</p>
+                      <p className="text-[10px] text-gray-400 sm:hidden uppercase font-bold tracking-tight mt-1">
+                        {course.degree} • Sem {course.semester}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 hidden sm:table-cell">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-tight truncate max-w-[150px]">
+                          {course.degree}
+                        </span>
+                        <span className="w-fit px-2 py-0.5 bg-[#F0F2F8] text-[#1B2B6B] text-[9px] font-bold uppercase rounded-md">
+                          Semestre {course.semester}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-[#FFF0F0] text-[#CC1116] flex items-center justify-center font-bold text-[10px] shrink-0">
+                          {course.professorName?.[0]}
+                        </div>
+                        <p className="text-xs font-semibold text-gray-700 truncate max-w-[120px]">
+                          {course.professorName}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 hidden lg:table-cell">
+                      <div className="flex flex-col gap-1">
+                        {course.schedule && course.schedule.length > 0 ? (
+                          course.schedule.slice(0, 2).map((s, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 text-[10px] text-gray-500">
+                              <span className="font-bold text-[#1B2B6B] min-w-[35px]">{s.day}:</span>
+                              <span>{s.startTime}-{s.endTime}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-[10px] text-gray-400 italic">No asignado</span>
+                        )}
+                        {course.schedule && course.schedule.length > 2 && (
+                          <span className="text-[9px] text-gray-400">+ {course.schedule.length - 2} más</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-1 sm:gap-2">
+                        <button 
+                          onClick={() => openEditModal(course)}
+                          className="p-2 text-gray-400 hover:text-[#1B2B6B] hover:bg-gray-100 rounded-xl transition-all"
+                          title="Editar"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(course.id)}
+                          className="p-2 text-gray-400 hover:text-[#CC1116] hover:bg-red-50 rounded-xl transition-all"
+                          title="Eliminar"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal Form */}

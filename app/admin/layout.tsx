@@ -20,7 +20,7 @@ const adminNav: NavItem[] = [
 
 const superAdminNav: NavItem[] = [
   {
-    label: "Registros de Entrada",
+    label: "Monitoreo de Estudiantes",
     href: "/admin/attendance",
     icon: (
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">

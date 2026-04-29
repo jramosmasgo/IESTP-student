@@ -14,6 +14,7 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import { showSuccess, showError, showConfirm } from "@/lib/swal";
 
 interface Staff {
   id: string;
@@ -85,10 +86,11 @@ export default function AdminsPage() {
         });
       }
       
+      showSuccess(editId ? "Actualizado" : "Registrado", editId ? "Los datos han sido actualizados." : "El administrativo ha sido registrado correctamente.");
       closeModal();
     } catch (error) {
       console.error("Error saving admin:", error);
-      alert("Error al guardar el administrativo.");
+      showError("Error al guardar", "Hubo un problema al intentar guardar los datos.");
     } finally {
       setIsSubmitting(false);
     }
@@ -123,11 +125,15 @@ export default function AdminsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este administrativo?")) return;
+    const result = await showConfirm("¿Eliminar administrativo?", "Esta acción quitará los permisos de acceso.");
+    if (!result.isConfirmed) return;
+
     try {
       await deleteDoc(doc(db, "staff", id));
+      showSuccess("Eliminado", "El registro ha sido eliminado.");
     } catch (error) {
       console.error("Error deleting admin:", error);
+      showError("Error", "No se pudo eliminar el registro.");
     }
   };
 

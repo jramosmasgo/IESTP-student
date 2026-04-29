@@ -15,6 +15,7 @@ import {
   Timestamp
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import { showSuccess, showError, showConfirm } from "@/lib/swal";
 
 interface Publication {
   id: string;
@@ -110,10 +111,11 @@ export default function PublicationsPage() {
         });
       }
       
+      showSuccess(editId ? "Actualizado" : "Publicado", editId ? "La publicación ha sido actualizada." : "El mensaje ha sido publicado correctamente.");
       closeModal();
     } catch (error) {
       console.error("Error saving publication:", error);
-      alert("Error al guardar el mensaje.");
+      showError("Error al guardar", "Hubo un problema al intentar guardar el mensaje.");
     } finally {
       setIsSubmitting(false);
     }
@@ -142,11 +144,15 @@ export default function PublicationsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar esta publicación?")) return;
+    const result = await showConfirm("¿Eliminar publicación?", "Esta acción no se puede deshacer.");
+    if (!result.isConfirmed) return;
+
     try {
       await deleteDoc(doc(db, "post", id));
+      showSuccess("Eliminado", "La publicación ha sido borrada.");
     } catch (error) {
       console.error("Error deleting publication:", error);
+      showError("Error", "No se pudo eliminar la publicación.");
     }
   };
 

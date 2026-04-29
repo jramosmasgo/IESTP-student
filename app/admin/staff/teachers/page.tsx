@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import { showSuccess, showError } from "@/lib/swal";
 
 interface Staff {
   id: string;
@@ -73,10 +74,10 @@ export default function TeachersPage() {
         phone: "",
         address: "",
       });
-      alert("Profesor registrado exitosamente en Firestore.");
+      showSuccess("Registrado", "Profesor registrado exitosamente.");
     } catch (error) {
       console.error("Error adding teacher:", error);
-      alert("Error al registrar el profesor.");
+      showError("Error al registrar", "No se pudo registrar al profesor.");
     } finally {
       setIsSubmitting(false);
     }

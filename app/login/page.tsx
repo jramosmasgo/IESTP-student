@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { showError } from "@/lib/swal";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
@@ -92,17 +93,18 @@ export default function LoginPage() {
     } catch (err) {
       const firebaseErr = err as { code?: string; message?: string };
       console.error("Login error:", err);
-      // Depuración para móvil
-      alert("Error Firebase: " + (firebaseErr.code || "unknown") + "\n" + firebaseErr.message);
 
       let message = "Error al iniciar sesión. Verifica tus credenciales.";
 
       if (firebaseErr.code === "auth/user-not-found" || firebaseErr.code === "auth/wrong-password" || firebaseErr.code === "auth/invalid-credential") {
-        message = "Correo o contraseña incorrectos.";
+        message = "El correo o la contraseña son incorrectos.";
       } else if (firebaseErr.code === "auth/too-many-requests") {
-        message = "Demasiados intentos. Inténtalo más tarde.";
+        message = "Demasiados intentos fallidos. Inténtalo más tarde.";
+      } else if (firebaseErr.code === "auth/network-request-failed") {
+        message = "Error de conexión. Revisa tu internet.";
       }
 
+      showError("Acceso Denegado", message);
       setError(message);
       setLoading(false);
     }
@@ -163,10 +165,15 @@ export default function LoginPage() {
     } catch (err) {
       const firebaseErr = err as { code?: string; message?: string };
       console.error("Admin login error:", firebaseErr);
-      alert("Error Admin Firebase: " + (firebaseErr.code || "unknown") + "\n" + firebaseErr.message);
 
       let message = "Error al iniciar sesión administrativa.";
-      if (firebaseErr.code === "auth/invalid-credential") message = "Credenciales incorrectas.";
+      if (firebaseErr.code === "auth/invalid-credential" || firebaseErr.code === "auth/user-not-found" || firebaseErr.code === "auth/wrong-password") {
+        message = "El correo o la contraseña son incorrectos.";
+      } else if (firebaseErr.code === "auth/network-request-failed") {
+        message = "Error de conexión. Revisa tu internet.";
+      }
+
+      showError("Error de Acceso", message);
       setError(message);
       setLoading(false);
     }

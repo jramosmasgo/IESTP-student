@@ -10,6 +10,7 @@ import {
   getDocs,
   Timestamp
 } from "firebase/firestore";
+import { showError } from "@/lib/swal";
 
 
 interface AttendanceRecord {
@@ -27,6 +28,9 @@ interface Student {
   surname: string;
   dni: string;
   degree?: string;
+  phone?: string;
+  emergency_phone?: string;
+  semester?: string;
   [key: string]: unknown;
 }
 
@@ -42,6 +46,7 @@ export default function AttendancePage() {
   const [modalRecords, setModalRecords] = useState<AttendanceRecord[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"history" | "info">("history");
 
   // Initial loading state for students
 
@@ -78,6 +83,7 @@ export default function AttendancePage() {
     setIsModalOpen(true);
     setIsModalLoading(true);
     setModalRecords([]); // Reset records
+    setActiveTab("history"); // Default tab
 
     try {
       // Intentamos primero con la consulta completa
@@ -112,7 +118,7 @@ export default function AttendancePage() {
       setModalRecords(records);
     } catch (error) {
       console.error("Error fetching student records:", error);
-      alert("Error al cargar los registros. Revisa la consola.");
+      showError("Error de carga", "No se pudieron obtener los registros de asistencia.");
     } finally {
       setIsModalLoading(false);
     }
@@ -144,9 +150,9 @@ export default function AttendancePage() {
     <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-[#0D1A3E]">Registros de Entrada</h1>
+          <h1 className="text-2xl font-bold text-[#0D1A3E]">Monitoreo de Estudiantes</h1>
           <p className="text-sm text-[#4A5680] mt-1">
-            Monitorea el ingreso de estudiantes en tiempo real.
+            Visualiza los registros de entrada y perfiles de los alumnos en tiempo real.
           </p>
         </div>
       </div>
@@ -271,41 +277,125 @@ export default function AttendancePage() {
               </button>
             </div>
 
+            {/* Tabs */}
+            <div className="flex border-b border-gray-100 bg-gray-50/50">
+              <button 
+                onClick={() => setActiveTab("history")}
+                className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest transition-all ${
+                  activeTab === "history" 
+                    ? "text-[#1B2B6B] border-b-2 border-[#1B2B6B] bg-white" 
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                Historial Asistencia
+              </button>
+              <button 
+                onClick={() => setActiveTab("info")}
+                className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest transition-all ${
+                  activeTab === "info" 
+                    ? "text-[#1B2B6B] border-b-2 border-[#1B2B6B] bg-white" 
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                Información Personal
+              </button>
+            </div>
+
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Historial de Entradas</h4>
-              
-              {isModalLoading ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-8 h-8 border-3 border-[#1B2B6B] border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-sm text-gray-500">Cargando registros...</p>
-                </div>
-              ) : modalRecords.length > 0 ? (
-                <div className="space-y-3">
-                  {modalRecords.map((record) => (
-                    <div key={record.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 gap-3">
+            <div className="p-6 overflow-y-auto flex-1">
+              {activeTab === "history" ? (
+                <>
+                  <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Registro de Entradas</h4>
+                  {isModalLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-8 h-8 border-3 border-[#1B2B6B] border-t-transparent rounded-full animate-spin mb-4"></div>
+                      <p className="text-sm text-gray-500">Cargando registros...</p>
+                    </div>
+                  ) : modalRecords.length > 0 ? (
+                    <div className="space-y-3">
+                      {modalRecords.map((record) => (
+                        <div key={record.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 gap-3">
+                          <div className="flex items-center gap-4">
+                            <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">{formatDateLabel(record.dateTime)}</p>
+                              <p className="text-[10px] text-gray-400">ID Registro: {record.id.substring(0,8)}</p>
+                            </div>
+                          </div>
+                          <div className="text-left sm:text-right pl-6 sm:pl-0">
+                            <p className="text-sm font-bold text-[#1B2B6B]">{formatTime(record.dateTime)}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Entrada Validada</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-gray-500">No hay registros de asistencia.</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nombre Completo</p>
+                      <p className="text-sm font-bold text-[#1B2B6B]">{selectedStudent?.name} {selectedStudent?.surname}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">DNI / Documento</p>
+                      <p className="text-sm font-bold text-[#1B2B6B] font-mono">{selectedStudent?.dni}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Programa de Estudios</p>
+                      <p className="text-sm font-bold text-[#1B2B6B]">{selectedStudent?.degree}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Semestre Actual</p>
+                      <p className="text-sm font-bold text-[#1B2B6B]">{selectedStudent?.semester || "No especificado"}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
+                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-600 shadow-sm">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                        </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{formatDateLabel(record.dateTime)}</p>
-                          <p className="text-xs text-gray-400">Registrado por: {record.registeredBy}</p>
+                          <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-0.5">Teléfono Personal</p>
+                          <p className="text-sm font-bold text-blue-900">{selectedStudent?.phone || "No registrado"}</p>
                         </div>
                       </div>
-                      <div className="text-left sm:text-right pl-6 sm:pl-0">
-                        <p className="text-sm font-bold text-[#1B2B6B]">{formatTime(record.dateTime)}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Entrada</p>
-                      </div>
+                      {selectedStudent?.phone && (
+                        <a href={`tel:${selectedStudent.phone}`} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">Llamar</a>
+                      )}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+
+                    <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-orange-600 shadow-sm">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-0.5">Emergencia</p>
+                          <p className="text-sm font-bold text-orange-900">{selectedStudent?.emergency_phone || "No registrado"}</p>
+                        </div>
+                      </div>
+                      {selectedStudent?.emergency_phone && (
+                        <a href={`tel:${selectedStudent.emergency_phone}`} className="px-4 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold hover:bg-orange-700 transition shadow-lg shadow-orange-900/20">Llamar</a>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500">No hay registros de asistencia para este alumno.</p>
                 </div>
               )}
             </div>
