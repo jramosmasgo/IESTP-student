@@ -15,6 +15,7 @@ interface Course {
   name: string;
   degree: string;
   semester: string;
+  shift?: string;
   schedule: { day: string; startTime: string; endTime: string }[];
 }
 
@@ -80,9 +81,20 @@ export default function MyCoursesPage() {
             <div key={course.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
               <div className="p-6 flex-1">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F0F2F8] text-[#1B2B6B] uppercase">
-                    Semestre {course.semester}
-                  </span>
+                  <div className="flex gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F0F2F8] text-[#1B2B6B] uppercase">
+                      Semestre {course.semester}
+                    </span>
+                    {course.shift && (
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        course.shift === "vespertino" 
+                          ? "bg-orange-50 text-orange-600" 
+                          : "bg-blue-50 text-blue-600"
+                      }`}>
+                        {course.shift}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <h3 className="text-lg font-bold text-[#0D1A3E] leading-tight mb-2">
                   {course.name}

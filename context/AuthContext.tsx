@@ -29,6 +29,8 @@ export interface UserData {
   degree?: string;
   Semester?: string;
   semester?: string;
+  shift?: string;
+  active?: boolean;
   qr_data?: string;
   // Escape hatch for extra Firestore fields
   [key: string]: unknown;

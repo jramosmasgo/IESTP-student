@@ -156,9 +156,19 @@ export default function LoginPage() {
 
       // Guardar datos en localStorage
       const doc = querySnapshot.docs[0];
-      const staffData = { id: doc.id, ...doc.data(), type: 'staff' as const };
-      localStorage.setItem('user_data', JSON.stringify(staffData));
-      setUserData(staffData);
+      const staffData = doc.data();
+
+      // Validar si el usuario está activo
+      if (staffData.active === false) {
+        await signOut(auth);
+        setError("Acceso denegado: Tu cuenta ha sido desactivada por el administrador.");
+        setLoading(false);
+        return;
+      }
+
+      const finalStaffData = { id: doc.id, ...staffData, type: 'staff' as const };
+      localStorage.setItem('user_data', JSON.stringify(finalStaffData));
+      setUserData(finalStaffData);
 
       // Éxito
       router.push("/admin");

@@ -31,6 +31,7 @@ interface Student {
   phone?: string;
   emergency_phone?: string;
   semester?: string;
+  shift?: string;
   [key: string]: unknown;
 }
 
@@ -39,6 +40,7 @@ export default function AttendancePage() {
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
+  const [shiftFilter, setShiftFilter] = useState("TODOS");
 
   // Student Search & Modal states
   const [allStudents, setAllStudents] = useState<Student[]>([]);
@@ -52,12 +54,13 @@ export default function AttendancePage() {
 
   // Filtered students computed (avoids setState-in-effect anti-pattern)
   const filteredStudents = useMemo(() => {
-    if (searchTerm.trim().length === 0) return [];
-    return allStudents.filter(s =>
-      `${s.name} ${s.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.dni.includes(searchTerm)
-    );
-  }, [searchTerm, allStudents]);
+    return allStudents.filter(s => {
+      const matchesSearch = `${s.name} ${s.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            s.dni.includes(searchTerm);
+      const matchesShift = shiftFilter === "TODOS" || s.shift === shiftFilter;
+      return matchesSearch && matchesShift;
+    });
+  }, [searchTerm, allStudents, shiftFilter]);
 
 
   // Fetch all students for searching
@@ -175,12 +178,28 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        {searchTerm && (
+        <div className="w-full sm:w-auto min-w-[150px]">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Turno</label>
+          <select
+            value={shiftFilter}
+            onChange={(e) => setShiftFilter(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white outline-none"
+          >
+            <option value="TODOS">Todos los turnos</option>
+            <option value="diurno">Diurno</option>
+            <option value="vespertino">Vespertino</option>
+          </select>
+        </div>
+
+        {(searchTerm || shiftFilter !== "TODOS") && (
           <button 
-            onClick={() => setSearchTerm("")}
+            onClick={() => {
+              setSearchTerm("");
+              setShiftFilter("TODOS");
+            }}
             className="px-4 py-2 text-xs font-bold text-[#CC1116] hover:bg-red-50 rounded-xl transition"
           >
-            Limpiar búsqueda
+            Limpiar filtros
           </button>
         )}
       </div>
@@ -193,6 +212,7 @@ export default function AttendancePage() {
               <tr className="bg-[#F8FAFC] border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Estudiante</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">DNI</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Turno</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Carrera / Programa</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
               </tr>
@@ -224,6 +244,15 @@ export default function AttendancePage() {
                     </td>
                     <td className="px-6 py-4 hidden sm:table-cell">
                       <p className="text-xs text-gray-500 font-mono">{student.dni}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                        student.shift === "vespertino" 
+                          ? "bg-orange-50 text-orange-600 border border-orange-100" 
+                          : "bg-blue-50 text-blue-600 border border-blue-100"
+                      }`}>
+                        {student.shift || "diurno"}
+                      </span>
                     </td>
                     <td className="px-6 py-4 hidden md:table-cell">
                       <span className="text-[10px] font-bold text-[#1B2B6B] bg-[#F0F2F8] px-2 py-0.5 rounded-md uppercase">
@@ -358,6 +387,10 @@ export default function AttendancePage() {
                     <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Semestre Actual</p>
                       <p className="text-sm font-bold text-[#1B2B6B]">{selectedStudent?.semester || "No especificado"}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Turno Asignado</p>
+                      <p className="text-sm font-bold text-[#1B2B6B] capitalize">{selectedStudent?.shift || "diurno"}</p>
                     </div>
                   </div>
 

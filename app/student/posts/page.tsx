@@ -18,6 +18,7 @@ interface Post {
   authorName: string;
   degree: string;
   semester: string;
+  shift?: string;
   createdAt: Timestamp;
 }
 
@@ -33,7 +34,8 @@ export default function StudentPostsPage() {
     const q = query(
       collection(db, "post"),
       where("degree", "==", userData.degree),
-      where("semester", "==", userData.Semester || userData.semester || "V")
+      where("semester", "==", userData.Semester || userData.semester || "V"),
+      where("shift", "==", userData.shift || "diurno")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -102,6 +104,13 @@ export default function StudentPostsPage() {
                     <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#F0F2F8] text-[#1B2B6B] uppercase">
                       Semestre {post.semester}
                     </span>
+                    {post.shift && (
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                        post.shift === "vespertino" ? "bg-orange-50 text-orange-600" : "bg-blue-50 text-blue-600"
+                      }`}>
+                        {post.shift}
+                      </span>
+                    )}
                   </div>
                 </div>
 

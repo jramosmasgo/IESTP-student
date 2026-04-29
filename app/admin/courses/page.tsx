@@ -37,6 +37,7 @@ interface Course {
   professor: string | { path: string }; // Firestore ref or string path
   professorName?: string; // Resolved name for display
   schedule?: ScheduleItem[];
+  shift?: "diurno" | "vespertino";
 }
 
 const DEGREES = [
@@ -52,6 +53,7 @@ const DEGREES = [
 ];
 const SEMESTERS = ["I", "II", "III", "IV", "V", "VI"];
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const SHIFTS = ["diurno", "vespertino"];
 
 export default function CoursesPage() {
   useAuth(); // ensure auth context is initialized
@@ -69,21 +71,24 @@ export default function CoursesPage() {
     semester: "I",
     professorId: "",
     schedule: [] as ScheduleItem[],
+    shift: "diurno" as "diurno" | "vespertino",
   });
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [degreeFilter, setDegreeFilter] = useState("TODOS");
   const [semesterFilter, setSemesterFilter] = useState("TODOS");
+  const [shiftFilter, setShiftFilter] = useState("TODOS");
 
   const filteredCourses = useMemo(() => {
     return courses.filter(course => {
       const matchesName = course.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDegree = degreeFilter === "TODOS" || course.degree === degreeFilter;
       const matchesSemester = semesterFilter === "TODOS" || course.semester === semesterFilter;
-      return matchesName && matchesDegree && matchesSemester;
+      const matchesShift = shiftFilter === "TODOS" || course.shift === shiftFilter;
+      return matchesName && matchesDegree && matchesSemester && matchesShift;
     });
-  }, [courses, searchTerm, degreeFilter, semesterFilter]);
+  }, [courses, searchTerm, degreeFilter, semesterFilter, shiftFilter]);
 
   // Load Professors
   useEffect(() => {
@@ -132,6 +137,7 @@ export default function CoursesPage() {
           semester: data.semester,
           professor: data.professor,
           schedule: data.schedule || [],
+          shift: data.shift || "diurno",
           professorName
         } as Course;
       }));
@@ -169,6 +175,7 @@ export default function CoursesPage() {
       semester: course.semester,
       professorId: profId,
       schedule: course.schedule || [],
+      shift: course.shift || "diurno",
     });
     setEditId(course.id);
     setIsModalOpen(true);
@@ -183,6 +190,7 @@ export default function CoursesPage() {
       semester: "I",
       professorId: "",
       schedule: [],
+      shift: "diurno",
     });
   };
 
@@ -198,6 +206,7 @@ export default function CoursesPage() {
         semester: formData.semester,
         professor: `/staff/${formData.professorId}`,
         schedule: formData.schedule,
+        shift: formData.shift,
         updatedAt: serverTimestamp(),
       };
 
@@ -285,17 +294,30 @@ export default function CoursesPage() {
             onChange={(e) => setSemesterFilter(e.target.value)}
             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white outline-none"
           >
-            <option value="TODOS">Todos</option>
             {SEMESTERS.map(s => <option key={s} value={s}>Semestre {s}</option>)}
           </select>
         </div>
 
-        {(searchTerm || degreeFilter !== "TODOS" || semesterFilter !== "TODOS") && (
+        <div className="w-full sm:w-auto min-w-[120px]">
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Turno</label>
+          <select
+            value={shiftFilter}
+            onChange={(e) => setShiftFilter(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white outline-none"
+          >
+            <option value="TODOS">Todos</option>
+            <option value="diurno">Diurno</option>
+            <option value="vespertino">Vespertino</option>
+          </select>
+        </div>
+
+        {(searchTerm || degreeFilter !== "TODOS" || semesterFilter !== "TODOS" || shiftFilter !== "TODOS") && (
           <button 
             onClick={() => {
               setSearchTerm("");
               setDegreeFilter("TODOS");
               setSemesterFilter("TODOS");
+              setShiftFilter("TODOS");
             }}
             className="px-4 py-2.5 text-xs font-bold text-[#CC1116] hover:bg-red-50 rounded-xl transition mb-0.5"
           >
@@ -312,6 +334,7 @@ export default function CoursesPage() {
               <tr className="bg-[#F8FAFC] border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Curso</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">Carrera / Semestre</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Turno</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Docente</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden lg:table-cell">Horario</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
@@ -344,6 +367,15 @@ export default function CoursesPage() {
                           Semestre {course.semester}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${
+                        course.shift === "vespertino" 
+                          ? "bg-orange-50 text-orange-600 border border-orange-100" 
+                          : "bg-blue-50 text-blue-600 border border-blue-100"
+                      }`}>
+                        {course.shift}
+                      </span>
                     </td>
                     <td className="px-6 py-4 hidden md:table-cell">
                       <div className="flex items-center gap-2">
@@ -450,6 +482,25 @@ export default function CoursesPage() {
                   >
                     {SEMESTERS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Turno</label>
+                <div className="flex gap-4">
+                  {SHIFTS.map(s => (
+                    <label key={s} className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-white transition">
+                      <input 
+                        type="radio" 
+                        name="shift" 
+                        value={s}
+                        checked={formData.shift === s}
+                        onChange={(e) => setFormData({...formData, shift: e.target.value as any})}
+                        className="text-[#1B2B6B] focus:ring-[#1B2B6B]"
+                      />
+                      <span className="text-sm font-semibold capitalize text-gray-700">{s}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 

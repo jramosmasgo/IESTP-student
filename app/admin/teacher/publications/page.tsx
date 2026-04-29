@@ -24,6 +24,7 @@ interface Publication {
   message: string;
   degree: string;
   semester: string;
+  shift?: string;
   authorName: string;
   createdAt: Timestamp;
 }
@@ -41,6 +42,7 @@ const DEGREES = [
 ];
 
 const SEMESTERS = ["I", "II", "III", "IV", "V", "VI"];
+const SHIFTS = ["diurno", "vespertino"];
 
 export default function PublicationsPage() {
   const { userData, loading: authLoading } = useAuth();
@@ -56,6 +58,7 @@ export default function PublicationsPage() {
     content: "",
     degree: "ASISTENCIA ADMINISTRATIVA",
     semester: "I",
+    shift: "diurno",
   });
 
   useEffect(() => {
@@ -97,6 +100,7 @@ export default function PublicationsPage() {
         message: formData.content,
         degree: formData.degree,
         semester: formData.semester,
+        shift: formData.shift,
         updatedAt: serverTimestamp(),
       };
 
@@ -127,6 +131,7 @@ export default function PublicationsPage() {
       content: pub.message,
       degree: pub.degree,
       semester: pub.semester,
+      shift: pub.shift || "diurno",
     });
     setEditId(pub.id);
     setIsModalOpen(true);
@@ -140,6 +145,7 @@ export default function PublicationsPage() {
       content: "",
       degree: "ASISTENCIA ADMINISTRATIVA",
       semester: "I",
+      shift: "diurno",
     });
   };
 
@@ -203,6 +209,13 @@ export default function PublicationsPage() {
                   <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 uppercase">
                     Semestre {pub.semester}
                   </span>
+                  {pub.shift && (
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${
+                      pub.shift === "vespertino" ? "bg-orange-50 text-orange-700" : "bg-blue-50 text-blue-700"
+                    }`}>
+                      {pub.shift}
+                    </span>
+                  )}
                 </div>
                  <div className="flex gap-1 sm:gap-2">
                   <button 
@@ -272,6 +285,25 @@ export default function PublicationsPage() {
                   >
                     {SEMESTERS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Turno</label>
+                <div className="flex gap-4">
+                  {SHIFTS.map(s => (
+                    <label key={s} className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-white transition">
+                      <input 
+                        type="radio" 
+                        name="shift" 
+                        value={s}
+                        checked={formData.shift === s}
+                        onChange={(e) => setFormData({...formData, shift: e.target.value})}
+                        className="text-[#1B2B6B] focus:ring-[#1B2B6B]"
+                      />
+                      <span className="text-sm font-semibold capitalize text-gray-700">{s}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 

@@ -8,7 +8,7 @@ import { useEffect } from "react";
 
 const studentNav: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "Página de inicio",
     href: "/student",
     icon: (
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -100,7 +100,8 @@ export default function StudentDashboard() {
     const q = query(
       collection(db, "course"),
       where("degree", "==", userData.degree),
-      where("semester", "==", userData.Semester || userData.semester || "V")
+      where("semester", "==", userData.Semester || userData.semester || "V"),
+      where("shift", "==", userData.shift || "diurno")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -151,6 +152,7 @@ export default function StudentDashboard() {
     code: userData?.dni || "S/DNI",
     career: userData?.degree || "Carrera no especificada",
     semester: userData?.Semester ? `Semestre ${userData.Semester}` : "Semestre no especificado",
+    shift: userData?.shift || "diurno",
     email: userData?.email || "",
     avatarColor: "#1B2B6B",
     avatarInitials: (userData?.name?.[0] || "S") + (userData?.surname?.[0] || "T")
@@ -219,7 +221,7 @@ export default function StudentDashboard() {
 
       {/* Header */}
       <div className="mb-7">
-        <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-xl font-bold text-gray-900">Página de inicio</h1>
         <p className="text-sm text-gray-500 mt-0.5">Bienvenido de vuelta, {student.name.split(" ")[0]}</p>
       </div>
 
@@ -239,7 +241,7 @@ export default function StudentDashboard() {
               <p className="text-xs font-medium mt-0.5" style={{color:'#1B2B6B'}}>{student.code}</p>
               <p className="text-xs text-[#4A5680] mt-1">{student.career}</p>
               <span className="mt-2 px-2.5 py-0.5 text-xs rounded-full font-medium" style={{background:'#EDF0FA',color:'#1B2B6B'}}>
-                {student.semester}
+                {student.semester} • <span className="capitalize">{student.shift}</span>
               </span>
               <div className="mt-3 pt-3 border-t border-gray-100 w-full text-xs text-gray-500">
                 {student.email}
@@ -288,16 +290,6 @@ export default function StudentDashboard() {
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              }
-            />
-            <StatCard
-              label="Tardanzas"
-              value={summary.late}
-              color="#f59e0b"
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               }
             />

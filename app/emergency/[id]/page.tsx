@@ -137,11 +137,6 @@ export default function EmergencyPage() {
               <p className="text-lg font-bold text-[#1B2B6B] font-mono">{student.dni}</p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Programa de Estudios</p>
-              <p className="text-sm font-bold text-gray-700">{student.degree}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Semestre {student.semester || "No especificado"}</p>
-            </div>
 
             <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex items-center justify-between">
               <div>

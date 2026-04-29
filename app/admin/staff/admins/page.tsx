@@ -25,6 +25,7 @@ interface Staff {
   phone: string;
   address: string;
   role: string;
+  active?: boolean;
 }
 
 export default function AdminsPage() {
@@ -44,6 +45,7 @@ export default function AdminsPage() {
     phone: "",
     address: "",
     role: "administrador",
+    active: true,
   });
 
   useEffect(() => {
@@ -105,6 +107,7 @@ export default function AdminsPage() {
       phone: admin.phone,
       address: admin.address,
       role: admin.role,
+      active: admin.active !== false,
     });
     setEditId(admin.id);
     setIsModalOpen(true);
@@ -121,6 +124,7 @@ export default function AdminsPage() {
       phone: "",
       address: "",
       role: "administrador",
+      active: true,
     });
   };
 
@@ -172,6 +176,7 @@ export default function AdminsPage() {
               <tr className="bg-[#F8FAFC] border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Nombre</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden sm:table-cell">DNI</th>
+                <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Estado</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider">Rol</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider hidden md:table-cell">Contacto</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#4A5680] uppercase tracking-wider text-right">Acciones</th>
@@ -200,6 +205,15 @@ export default function AdminsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 font-mono hidden sm:table-cell">
                       {admin.dni}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${
+                        admin.active !== false 
+                          ? "bg-green-50 text-green-600 border-green-100" 
+                          : "bg-red-50 text-red-600 border-red-100"
+                      }`}>
+                        {admin.active !== false ? "Activo" : "Inactivo"}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase ${
@@ -296,6 +310,32 @@ export default function AdminsPage() {
                     <option value="administrador">Administrador</option>
                     <option value="superadministrador">Super Administrador</option>
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Estado de cuenta</label>
+                <div className="flex gap-4">
+                  <label className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-white transition">
+                    <input 
+                      type="radio" 
+                      name="active" 
+                      checked={formData.active === true}
+                      onChange={() => setFormData({...formData, active: true})}
+                      className="text-[#CC1116] focus:ring-[#CC1116]"
+                    />
+                    <span className="text-sm font-semibold text-gray-700">Activo</span>
+                  </label>
+                  <label className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-white transition">
+                    <input 
+                      type="radio" 
+                      name="active" 
+                      checked={formData.active === false}
+                      onChange={() => setFormData({...formData, active: false})}
+                      className="text-[#CC1116] focus:ring-[#CC1116]"
+                    />
+                    <span className="text-sm font-semibold text-gray-700">Inactivo</span>
+                  </label>
                 </div>
               </div>
 
